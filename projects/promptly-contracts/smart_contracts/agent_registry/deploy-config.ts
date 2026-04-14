@@ -3,23 +3,13 @@ import { AgentRegistryFactory } from '../artifacts/agent_registry/AgentRegistryC
 import { AgentExecutorFactory } from '../artifacts/agent_registry/AgentExecutorClient'
 import { AgentReputationFactory } from '../artifacts/agent_registry/AgentReputationClient'
 
-const NETWORK = process.env.NETWORK || 'testnet';
+const MNEMONIC = process.env.DEPLOYER_MNEMONIC || 'toy inherit clever cave skirt alcohol flight muscle congress viable label aim great cycle easily palace blame crash endless marble pause category tissue absent one'
 
 export async function deploy() {
-  console.log(`=== Deploying Promptly Agent Registry Contracts (${NETWORK}) ===`)
+  console.log('=== Deploying Promptly Agent Registry Contracts ===')
 
-  let algorand: AlgorandClient;
-  let environment: string;
-  
-  if (NETWORK === 'localnet') {
-    algorand = AlgorandClient.defaultLocalNet();
-    environment = 'localnet';
-  } else {
-    algorand = AlgorandClient.fromEnvironment({ network: NETWORK });
-    environment = NETWORK;
-  }
-  
-  const deployer = await algorand.account.fromEnvironment('DEPLOYER', { environment })
+  const algorand = AlgorandClient.fromEnvironment()
+  const deployer = await algorand.account.fromEnvironment('DEPLOYER')
   
   console.log(`Deployer: ${deployer.addr}`)
 
@@ -30,13 +20,14 @@ export async function deploy() {
   const { appClient: registryClient, result: registryResult } = await registryFactory.deploy({
     onUpdate: 'append',
     onSchemaBreak: 'append',
-    createParams: {
-      method: 'create',
-      args: [],
-    },
   })
 
   if (['create', 'replace'].includes(registryResult.operationPerformed)) {
+    await algorand.send.payment({
+      amount: (2).algo(),
+      sender: deployer.addr,
+      receiver: registryClient.appAddress,
+    })
     console.log(`AgentRegistry deployed with App ID: ${registryClient.appId}`)
   } else {
     console.log(`AgentRegistry already exists with App ID: ${registryClient.appId}`)
@@ -49,13 +40,14 @@ export async function deploy() {
   const { appClient: executorClient, result: executorResult } = await executorFactory.deploy({
     onUpdate: 'append',
     onSchemaBreak: 'append',
-    createParams: {
-      method: 'create',
-      args: [],
-    },
   })
 
   if (['create', 'replace'].includes(executorResult.operationPerformed)) {
+    await algorand.send.payment({
+      amount: (2).algo(),
+      sender: deployer.addr,
+      receiver: executorClient.appAddress,
+    })
     console.log(`AgentExecutor deployed with App ID: ${executorClient.appId}`)
   } else {
     console.log(`AgentExecutor already exists with App ID: ${executorClient.appId}`)
@@ -68,13 +60,14 @@ export async function deploy() {
   const { appClient: reputationClient, result: reputationResult } = await reputationFactory.deploy({
     onUpdate: 'append',
     onSchemaBreak: 'append',
-    createParams: {
-      method: 'create',
-      args: [],
-    },
   })
 
   if (['create', 'replace'].includes(reputationResult.operationPerformed)) {
+    await algorand.send.payment({
+      amount: (2).algo(),
+      sender: deployer.addr,
+      receiver: reputationClient.appAddress,
+    })
     console.log(`AgentReputation deployed with App ID: ${reputationClient.appId}`)
   } else {
     console.log(`AgentReputation already exists with App ID: ${reputationClient.appId}`)
@@ -85,3 +78,5 @@ export async function deploy() {
   console.log(`AgentExecutor App ID: ${executorClient.appId}`)
   console.log(`AgentReputation App ID: ${reputationClient.appId}`)
 }
+
+deploy().catch(console.error)
