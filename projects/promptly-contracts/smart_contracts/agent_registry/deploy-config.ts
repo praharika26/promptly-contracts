@@ -3,11 +3,23 @@ import { AgentRegistryFactory } from '../artifacts/agent_registry/AgentRegistryC
 import { AgentExecutorFactory } from '../artifacts/agent_registry/AgentExecutorClient'
 import { AgentReputationFactory } from '../artifacts/agent_registry/AgentReputationClient'
 
-export async function deploy() {
-  console.log('=== Deploying Promptly Agent Registry Contracts ===')
+const NETWORK = process.env.NETWORK || 'testnet';
 
-  const algorand = AlgorandClient.defaultLocalNet()
-  const deployer = await algorand.account.fromEnvironment('DEPLOYER', { environment: 'localnet' })
+export async function deploy() {
+  console.log(`=== Deploying Promptly Agent Registry Contracts (${NETWORK}) ===`)
+
+  let algorand: AlgorandClient;
+  let environment: string;
+  
+  if (NETWORK === 'localnet') {
+    algorand = AlgorandClient.defaultLocalNet();
+    environment = 'localnet';
+  } else {
+    algorand = AlgorandClient.fromEnvironment({ network: NETWORK });
+    environment = NETWORK;
+  }
+  
+  const deployer = await algorand.account.fromEnvironment('DEPLOYER', { environment })
   
   console.log(`Deployer: ${deployer.addr}`)
 
