@@ -53,6 +53,13 @@ export class AgentRegistry extends Contract {
   registryOwner = GlobalState<Account>({ key: 'registryOwner' })
 
   agents = BoxMap<uint64, Agent>({ keyPrefix: AGENT_PREFIX })
+  
+  @abimethod({ allowActions: 'NoOp', onCreate: 'require' })
+  public create(): void {
+    this.nextAgentId.value = Uint64(1)
+    this.totalAgents.value = Uint64(0)
+    this.registryOwner.value = Txn.sender
+  }
 
   @abimethod()
   public registerAgent(metadataURI: string): uint64 {
@@ -185,6 +192,11 @@ export class AgentExecutor extends Contract {
 
   executions = BoxMap<uint64, Execution>({ keyPrefix: EXEC_PREFIX })
 
+  @abimethod({ allowActions: 'NoOp', onCreate: 'require' })
+  public create(): void {
+    this.executionCount.value = Uint64(0)
+  }
+
   @abimethod()
   public invokeAgent(agentId: uint64, inputHash: bytes, callerNote: string): uint64 {
     this.executionCount.value = Uint64(0)
@@ -243,6 +255,11 @@ export class AgentReputation extends Contract {
   minStake = GlobalState<uint64>({ key: 'minStake' })
 
   reputations = BoxMap<uint64, Reputation>({ keyPrefix: REP_PREFIX })
+
+  @abimethod({ allowActions: 'NoOp', onCreate: 'require' })
+  public create(): void {
+    this.minStake.value = MIN_STAKE
+  }
 
   @abimethod()
   public stakeForAgent(agentId: uint64, stakeAmount: uint64): void {

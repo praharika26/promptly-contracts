@@ -4,45 +4,52 @@
 // @algorandfoundation/algorand-typescript/arc4/index.d.ts::Contract.approvalProgram() -> uint64:
 main:
     intcblock 1 8 0 1000000
-    bytecblock "re"
-    // smart_contracts/agent_registry/contract.algo.ts:242
+    bytecblock "re" "minStake"
+    // smart_contracts/agent_registry/contract.algo.ts:254
     // export class AgentReputation extends Contract {
-    txn NumAppArgs
-    bz main___algots__.defaultCreate@13
     txn OnCompletion
     !
     assert // OnCompletion must be NoOp
     txn ApplicationID
-    assert
+    bz main_create_NoOp@10
     pushbytess 0x2ad85165 0x148c821b 0x34d3ffd9 0x92887a6d 0xe512c21d 0x7deae3ee // method "stakeForAgent(uint64,uint64)void", method "unstakeFromAgent(uint64,uint64)void", method "incrementReputation(uint64)void", method "decrementReputation(uint64)void", method "getReputation(uint64)(uint64,uint64,uint64,uint64,uint64,uint64)", method "getMinStake()uint64"
     txna ApplicationArgs 0
-    match stakeForAgent unstakeFromAgent incrementReputation decrementReputation getReputation main_getMinStake_route@9
+    match stakeForAgent unstakeFromAgent incrementReputation decrementReputation getReputation main_getMinStake_route@8
     err
 
-main_getMinStake_route@9:
-    // smart_contracts/agent_registry/contract.algo.ts:345
+main_getMinStake_route@8:
+    // smart_contracts/agent_registry/contract.algo.ts:362
     // @abimethod({ readonly: true })
     pushbytes 0x151f7c7500000000000f4240
     log
     intc_0 // 1
     return
 
-main___algots__.defaultCreate@13:
-    // smart_contracts/agent_registry/contract.algo.ts:242
+main_create_NoOp@10:
+    // smart_contracts/agent_registry/contract.algo.ts:254
     // export class AgentReputation extends Contract {
-    txn OnCompletion
-    !
-    txn ApplicationID
-    !
-    &&
-    assert // OnCompletion must be NoOp && can only call when creating
+    pushbytes 0x4c5c61ba // method "create()void"
+    txna ApplicationArgs 0
+    match main_create_route@11
+    err
+
+main_create_route@11:
+    // smart_contracts/agent_registry/contract.algo.ts:255
+    // minStake = GlobalState<uint64>({ key: 'minStake' })
+    bytec_1 // "minStake"
+    // smart_contracts/agent_registry/contract.algo.ts:261
+    // this.minStake.value = MIN_STAKE
+    intc_3 // 1000000
+    app_global_put
+    // smart_contracts/agent_registry/contract.algo.ts:259
+    // @abimethod({ allowActions: 'NoOp', onCreate: 'require' })
     intc_0 // 1
     return
 
 
 // smart_contracts/agent_registry/contract.algo.ts::AgentReputation.stakeForAgent[routing]() -> void:
 stakeForAgent:
-    // smart_contracts/agent_registry/contract.algo.ts:247
+    // smart_contracts/agent_registry/contract.algo.ts:264
     // @abimethod()
     txna ApplicationArgs 1
     dup
@@ -60,40 +67,40 @@ stakeForAgent:
     btoi
     dup
     cover 2
-    // smart_contracts/agent_registry/contract.algo.ts:243
+    // smart_contracts/agent_registry/contract.algo.ts:255
     // minStake = GlobalState<uint64>({ key: 'minStake' })
-    pushbytes "minStake"
-    // smart_contracts/agent_registry/contract.algo.ts:249
+    bytec_1 // "minStake"
+    // smart_contracts/agent_registry/contract.algo.ts:266
     // this.minStake.value = MIN_STAKE
     intc_3 // 1000000
     app_global_put
     intc_3 // 1000000
-    // smart_contracts/agent_registry/contract.algo.ts:251
+    // smart_contracts/agent_registry/contract.algo.ts:268
     // assert(stakeAmount >= this.minStake.value, 'Minimum stake not met')
     >=
     assert // Minimum stake not met
-    // smart_contracts/agent_registry/contract.algo.ts:254
+    // smart_contracts/agent_registry/contract.algo.ts:271
     // if (!this.reputations(agentId).exists) {
     itob
     dup
-    // smart_contracts/agent_registry/contract.algo.ts:245
+    // smart_contracts/agent_registry/contract.algo.ts:257
     // reputations = BoxMap<uint64, Reputation>({ keyPrefix: REP_PREFIX })
     bytec_0 // "re"
     swap
     concat
     dup
-    // smart_contracts/agent_registry/contract.algo.ts:254
+    // smart_contracts/agent_registry/contract.algo.ts:271
     // if (!this.reputations(agentId).exists) {
     box_len
     bury 1
     bnz stakeForAgent_else_body@3
-    // smart_contracts/agent_registry/contract.algo.ts:261
+    // smart_contracts/agent_registry/contract.algo.ts:278
     // lastUpdated: Txn.firstValidTime,
     txn FirstValidTime
-    // smart_contracts/agent_registry/contract.algo.ts:257
+    // smart_contracts/agent_registry/contract.algo.ts:274
     // reputationScore: Uint64(0),
     intc_2 // 0
-    // smart_contracts/agent_registry/contract.algo.ts:255-262
+    // smart_contracts/agent_registry/contract.algo.ts:272-279
     // rep = {
     //   agentId: agentId,
     //   reputationScore: Uint64(0),
@@ -117,7 +124,7 @@ stakeForAgent:
     concat
 
 stakeForAgent_after_if_else@4:
-    // smart_contracts/agent_registry/contract.algo.ts:267
+    // smart_contracts/agent_registry/contract.algo.ts:284
     // rep.totalStaked = rep.totalStaked + stakeAmount
     dup
     pushint 16 // 16
@@ -126,23 +133,23 @@ stakeForAgent_after_if_else@4:
     +
     itob
     replace2 16
-    // smart_contracts/agent_registry/contract.algo.ts:268
+    // smart_contracts/agent_registry/contract.algo.ts:285
     // rep.lastUpdated = Txn.firstValidTime
     txn FirstValidTime
     itob
     replace2 40
-    // smart_contracts/agent_registry/contract.algo.ts:269
+    // smart_contracts/agent_registry/contract.algo.ts:286
     // this.reputations(agentId).value = clone(rep)
     dig 1
     swap
     box_put
-    // smart_contracts/agent_registry/contract.algo.ts:247
+    // smart_contracts/agent_registry/contract.algo.ts:264
     // @abimethod()
     intc_0 // 1
     return
 
 stakeForAgent_else_body@3:
-    // smart_contracts/agent_registry/contract.algo.ts:264
+    // smart_contracts/agent_registry/contract.algo.ts:281
     // rep = clone(this.reputations(agentId).value)
     dup
     box_get
@@ -152,7 +159,7 @@ stakeForAgent_else_body@3:
 
 // smart_contracts/agent_registry/contract.algo.ts::AgentReputation.unstakeFromAgent[routing]() -> void:
 unstakeFromAgent:
-    // smart_contracts/agent_registry/contract.algo.ts:272
+    // smart_contracts/agent_registry/contract.algo.ts:289
     // @abimethod()
     txna ApplicationArgs 1
     dup
@@ -168,27 +175,27 @@ unstakeFromAgent:
     ==
     assert // invalid number of bytes for arc4.uint64
     btoi
-    // smart_contracts/agent_registry/contract.algo.ts:274
+    // smart_contracts/agent_registry/contract.algo.ts:291
     // assert(this.reputations(agentId).exists, 'No reputation record')
     swap
     itob
-    // smart_contracts/agent_registry/contract.algo.ts:245
+    // smart_contracts/agent_registry/contract.algo.ts:257
     // reputations = BoxMap<uint64, Reputation>({ keyPrefix: REP_PREFIX })
     bytec_0 // "re"
     swap
     concat
-    // smart_contracts/agent_registry/contract.algo.ts:274
+    // smart_contracts/agent_registry/contract.algo.ts:291
     // assert(this.reputations(agentId).exists, 'No reputation record')
     dup
     box_len
     bury 1
     assert // No reputation record
-    // smart_contracts/agent_registry/contract.algo.ts:275
+    // smart_contracts/agent_registry/contract.algo.ts:292
     // const rep = clone(this.reputations(agentId).value)
     dup
     box_get
     pop
-    // smart_contracts/agent_registry/contract.algo.ts:276
+    // smart_contracts/agent_registry/contract.algo.ts:293
     // assert(rep.totalStaked >= amount, 'Insufficient stake')
     dup
     pushint 16 // 16
@@ -197,20 +204,20 @@ unstakeFromAgent:
     dig 4
     >=
     assert // Insufficient stake
-    // smart_contracts/agent_registry/contract.algo.ts:278-282
+    // smart_contracts/agent_registry/contract.algo.ts:295-299
     // itxn.payment({
     //   receiver: Txn.sender,
     //   amount: amount,
     //   fee: Uint64(1000),
     // }).submit()
     itxn_begin
-    // smart_contracts/agent_registry/contract.algo.ts:279
+    // smart_contracts/agent_registry/contract.algo.ts:296
     // receiver: Txn.sender,
     txn Sender
     dig 4
     itxn_field Amount
     itxn_field Receiver
-    // smart_contracts/agent_registry/contract.algo.ts:278-282
+    // smart_contracts/agent_registry/contract.algo.ts:295-299
     // itxn.payment({
     //   receiver: Txn.sender,
     //   amount: amount,
@@ -218,32 +225,32 @@ unstakeFromAgent:
     // }).submit()
     intc_0 // 1
     itxn_field TypeEnum
-    // smart_contracts/agent_registry/contract.algo.ts:281
+    // smart_contracts/agent_registry/contract.algo.ts:298
     // fee: Uint64(1000),
     pushint 1000 // 1000
     itxn_field Fee
-    // smart_contracts/agent_registry/contract.algo.ts:278-282
+    // smart_contracts/agent_registry/contract.algo.ts:295-299
     // itxn.payment({
     //   receiver: Txn.sender,
     //   amount: amount,
     //   fee: Uint64(1000),
     // }).submit()
     itxn_submit
-    // smart_contracts/agent_registry/contract.algo.ts:284
+    // smart_contracts/agent_registry/contract.algo.ts:301
     // rep.totalStaked = rep.totalStaked - amount
     uncover 3
     -
     itob
     replace2 16
-    // smart_contracts/agent_registry/contract.algo.ts:285
+    // smart_contracts/agent_registry/contract.algo.ts:302
     // rep.lastUpdated = Txn.firstValidTime
     txn FirstValidTime
     itob
     replace2 40
-    // smart_contracts/agent_registry/contract.algo.ts:286
+    // smart_contracts/agent_registry/contract.algo.ts:303
     // this.reputations(agentId).value = clone(rep)
     box_put
-    // smart_contracts/agent_registry/contract.algo.ts:272
+    // smart_contracts/agent_registry/contract.algo.ts:289
     // @abimethod()
     intc_0 // 1
     return
@@ -253,7 +260,7 @@ unstakeFromAgent:
 incrementReputation:
     intc_2 // 0
     pushbytes ""
-    // smart_contracts/agent_registry/contract.algo.ts:289
+    // smart_contracts/agent_registry/contract.algo.ts:306
     // @abimethod()
     txna ApplicationArgs 1
     dup
@@ -262,28 +269,28 @@ incrementReputation:
     ==
     assert // invalid number of bytes for arc4.uint64
     btoi
-    // smart_contracts/agent_registry/contract.algo.ts:292
+    // smart_contracts/agent_registry/contract.algo.ts:309
     // if (!this.reputations(agentId).exists) {
     itob
     dup
-    // smart_contracts/agent_registry/contract.algo.ts:245
+    // smart_contracts/agent_registry/contract.algo.ts:257
     // reputations = BoxMap<uint64, Reputation>({ keyPrefix: REP_PREFIX })
     bytec_0 // "re"
     swap
     concat
     dup
-    // smart_contracts/agent_registry/contract.algo.ts:292
+    // smart_contracts/agent_registry/contract.algo.ts:309
     // if (!this.reputations(agentId).exists) {
     box_len
     bury 1
     bnz incrementReputation_else_body@3
-    // smart_contracts/agent_registry/contract.algo.ts:299
+    // smart_contracts/agent_registry/contract.algo.ts:316
     // lastUpdated: Txn.firstValidTime,
     txn FirstValidTime
-    // smart_contracts/agent_registry/contract.algo.ts:295
+    // smart_contracts/agent_registry/contract.algo.ts:312
     // reputationScore: Uint64(0),
     intc_2 // 0
-    // smart_contracts/agent_registry/contract.algo.ts:293-300
+    // smart_contracts/agent_registry/contract.algo.ts:310-317
     // rep = {
     //   agentId: agentId,
     //   reputationScore: Uint64(0),
@@ -308,7 +315,7 @@ incrementReputation:
     bury 4
 
 incrementReputation_after_if_else@4:
-    // smart_contracts/agent_registry/contract.algo.ts:305
+    // smart_contracts/agent_registry/contract.algo.ts:322
     // if (rep.reputationScore < Uint64(1000)) {
     dig 3
     intc_1 // 8
@@ -318,7 +325,7 @@ incrementReputation_after_if_else@4:
     pushint 1000 // 1000
     <
     bz incrementReputation_after_if_else@6
-    // smart_contracts/agent_registry/contract.algo.ts:306
+    // smart_contracts/agent_registry/contract.algo.ts:323
     // rep.reputationScore = rep.reputationScore + Uint64(1)
     dig 2
     intc_0 // 1
@@ -330,7 +337,7 @@ incrementReputation_after_if_else@4:
     bury 4
 
 incrementReputation_after_if_else@6:
-    // smart_contracts/agent_registry/contract.algo.ts:308
+    // smart_contracts/agent_registry/contract.algo.ts:325
     // rep.totalInvocations = rep.totalInvocations + Uint64(1)
     dig 3
     dup
@@ -340,7 +347,7 @@ incrementReputation_after_if_else@6:
     +
     itob
     replace2 24
-    // smart_contracts/agent_registry/contract.algo.ts:309
+    // smart_contracts/agent_registry/contract.algo.ts:326
     // rep.successfulInvocations = rep.successfulInvocations + Uint64(1)
     dup
     pushint 32 // 32
@@ -349,23 +356,23 @@ incrementReputation_after_if_else@6:
     +
     itob
     replace2 32
-    // smart_contracts/agent_registry/contract.algo.ts:310
+    // smart_contracts/agent_registry/contract.algo.ts:327
     // rep.lastUpdated = Txn.firstValidTime
     txn FirstValidTime
     itob
     replace2 40
-    // smart_contracts/agent_registry/contract.algo.ts:311
+    // smart_contracts/agent_registry/contract.algo.ts:328
     // this.reputations(agentId).value = clone(rep)
     dig 1
     swap
     box_put
-    // smart_contracts/agent_registry/contract.algo.ts:289
+    // smart_contracts/agent_registry/contract.algo.ts:306
     // @abimethod()
     intc_0 // 1
     return
 
 incrementReputation_else_body@3:
-    // smart_contracts/agent_registry/contract.algo.ts:302
+    // smart_contracts/agent_registry/contract.algo.ts:319
     // rep = clone(this.reputations(agentId).value)
     dup
     box_get
@@ -377,7 +384,7 @@ incrementReputation_else_body@3:
 
 // smart_contracts/agent_registry/contract.algo.ts::AgentReputation.decrementReputation[routing]() -> void:
 decrementReputation:
-    // smart_contracts/agent_registry/contract.algo.ts:314
+    // smart_contracts/agent_registry/contract.algo.ts:331
     // @abimethod()
     txna ApplicationArgs 1
     dup
@@ -386,33 +393,33 @@ decrementReputation:
     ==
     assert // invalid number of bytes for arc4.uint64
     btoi
-    // smart_contracts/agent_registry/contract.algo.ts:316
+    // smart_contracts/agent_registry/contract.algo.ts:333
     // assert(this.reputations(agentId).exists, 'No reputation record')
     itob
-    // smart_contracts/agent_registry/contract.algo.ts:245
+    // smart_contracts/agent_registry/contract.algo.ts:257
     // reputations = BoxMap<uint64, Reputation>({ keyPrefix: REP_PREFIX })
     bytec_0 // "re"
     swap
     concat
     dupn 2
-    // smart_contracts/agent_registry/contract.algo.ts:316
+    // smart_contracts/agent_registry/contract.algo.ts:333
     // assert(this.reputations(agentId).exists, 'No reputation record')
     box_len
     bury 1
     assert // No reputation record
-    // smart_contracts/agent_registry/contract.algo.ts:317
+    // smart_contracts/agent_registry/contract.algo.ts:334
     // const rep = clone(this.reputations(agentId).value)
     box_get
     pop
     dup
-    // smart_contracts/agent_registry/contract.algo.ts:319
+    // smart_contracts/agent_registry/contract.algo.ts:336
     // if (rep.reputationScore > Uint64(0)) {
     intc_1 // 8
     extract_uint64
     dup
     cover 2
     bz decrementReputation_after_if_else@3
-    // smart_contracts/agent_registry/contract.algo.ts:320
+    // smart_contracts/agent_registry/contract.algo.ts:337
     // rep.reputationScore = rep.reputationScore - Uint64(1)
     dig 1
     intc_0 // 1
@@ -421,7 +428,7 @@ decrementReputation:
     replace2 8
 
 decrementReputation_after_if_else@3:
-    // smart_contracts/agent_registry/contract.algo.ts:322
+    // smart_contracts/agent_registry/contract.algo.ts:339
     // rep.totalInvocations = rep.totalInvocations + Uint64(1)
     dup
     pushint 24 // 24
@@ -430,17 +437,17 @@ decrementReputation_after_if_else@3:
     +
     itob
     replace2 24
-    // smart_contracts/agent_registry/contract.algo.ts:323
+    // smart_contracts/agent_registry/contract.algo.ts:340
     // rep.lastUpdated = Txn.firstValidTime
     txn FirstValidTime
     itob
     replace2 40
-    // smart_contracts/agent_registry/contract.algo.ts:324
+    // smart_contracts/agent_registry/contract.algo.ts:341
     // this.reputations(agentId).value = clone(rep)
     dig 2
     swap
     box_put
-    // smart_contracts/agent_registry/contract.algo.ts:314
+    // smart_contracts/agent_registry/contract.algo.ts:331
     // @abimethod()
     intc_0 // 1
     return
@@ -448,7 +455,7 @@ decrementReputation_after_if_else@3:
 
 // smart_contracts/agent_registry/contract.algo.ts::AgentReputation.getReputation[routing]() -> void:
 getReputation:
-    // smart_contracts/agent_registry/contract.algo.ts:327
+    // smart_contracts/agent_registry/contract.algo.ts:344
     // @abimethod({ readonly: true })
     txna ApplicationArgs 1
     dup
@@ -457,25 +464,25 @@ getReputation:
     ==
     assert // invalid number of bytes for arc4.uint64
     btoi
-    // smart_contracts/agent_registry/contract.algo.ts:330
+    // smart_contracts/agent_registry/contract.algo.ts:347
     // if (!this.reputations(agentId).exists) {
     itob
     dup
-    // smart_contracts/agent_registry/contract.algo.ts:245
+    // smart_contracts/agent_registry/contract.algo.ts:257
     // reputations = BoxMap<uint64, Reputation>({ keyPrefix: REP_PREFIX })
     bytec_0 // "re"
     swap
     concat
     dup
-    // smart_contracts/agent_registry/contract.algo.ts:330
+    // smart_contracts/agent_registry/contract.algo.ts:347
     // if (!this.reputations(agentId).exists) {
     box_len
     bury 1
     bnz getReputation_else_body@3
-    // smart_contracts/agent_registry/contract.algo.ts:333
+    // smart_contracts/agent_registry/contract.algo.ts:350
     // reputationScore: Uint64(0),
     intc_2 // 0
-    // smart_contracts/agent_registry/contract.algo.ts:331-338
+    // smart_contracts/agent_registry/contract.algo.ts:348-355
     // rep = {
     //   agentId: agentId,
     //   reputationScore: Uint64(0),
@@ -498,7 +505,7 @@ getReputation:
     concat
 
 getReputation_after_if_else@4:
-    // smart_contracts/agent_registry/contract.algo.ts:327
+    // smart_contracts/agent_registry/contract.algo.ts:344
     // @abimethod({ readonly: true })
     pushbytes 0x151f7c75
     swap
@@ -508,7 +515,7 @@ getReputation_after_if_else@4:
     return
 
 getReputation_else_body@3:
-    // smart_contracts/agent_registry/contract.algo.ts:340
+    // smart_contracts/agent_registry/contract.algo.ts:357
     // rep = clone(this.reputations(agentId).value)
     dup
     box_get

@@ -18,6 +18,10 @@ export async function deploy() {
   const { appClient: registryClient, result: registryResult } = await registryFactory.deploy({
     onUpdate: 'append',
     onSchemaBreak: 'append',
+    createParams: {
+      method: 'create',
+      args: [],
+    },
   })
 
   if (['create', 'replace'].includes(registryResult.operationPerformed)) {
@@ -33,6 +37,10 @@ export async function deploy() {
   const { appClient: executorClient, result: executorResult } = await executorFactory.deploy({
     onUpdate: 'append',
     onSchemaBreak: 'append',
+    createParams: {
+      method: 'create',
+      args: [],
+    },
   })
 
   if (['create', 'replace'].includes(executorResult.operationPerformed)) {
@@ -48,6 +56,10 @@ export async function deploy() {
   const { appClient: reputationClient, result: reputationResult } = await reputationFactory.deploy({
     onUpdate: 'append',
     onSchemaBreak: 'append',
+    createParams: {
+      method: 'create',
+      args: [],
+    },
   })
 
   if (['create', 'replace'].includes(reputationResult.operationPerformed)) {
